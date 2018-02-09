@@ -1,0 +1,199 @@
+\documentclass{exam}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{wasysym}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage[mathcal]{euscript}
+
+\title{CS294-145 Problem Set 1}
+\author{Charlie Tian}
+\date{January 2018}
+
+
+\begin{document}
+
+\maketitle
+
+I worked on this homework with my homework group. This consisted, for this week, of:
+
+\begin{enumerate}
+    \item Forest Yang
+    \item Antares Chen
+\end{enumerate}
+
+
+
+\begin{questions}
+
+
+
+
+    \question \textbf{W \& S 1.4}
+    
+    \begin{parts}
+    
+    
+    
+    \part I will utilize Theorem 1.14 in this proof.\\
+    
+    $\exists c > 0$ such that ($\exists c \, ln(n)$ approximation algorithm for unweighted set cover problem) $\implies$ (\textbf{P} = \textbf{NP}).\\
+    
+    We assume that such a $c$ has been found (as it must exist). We then show that if $\textbf{P} \neq \textbf{NP}$ then we will not have the $c \, ln(n)$ approximation algorithm to the uncapacitated facility location problem either. In other terms, we just need to show that if we have such an approximation algorithm, we will have such an approximation algorithm to the unweighted set cover problem as well, which violates the statement in Theorem 1.14\\
+    
+    To construct the equivalence between the algorithms, set the weights $f_i$ to all be the same nonzero value (such as 1). This makes the problem essentially unweighted, and we seek to minimize the number of sets $F'$ used.\\
+    
+    Then, we let $D = E$ (we need to accommodate all clients) and each member $i \in F$ accommodate the members of $D$ that correspond to the corresponding $S_i$ elements. We give those a cost of 0 and those that are not accommodated a cost approaching $\infty$ such that solving the facility problem will be the same as solving the set cover problem $(E, S_j)$. Note that the problems are the same because if we want to include the elements in $D$ that $S_i$ corresponds to in the set cover problem, we must include the associated $i \in F$ because the added cost will just be the finite $f_i$ and we would have incurred an infinite cost otherwise.\\
+    
+    If we do have such an approximation algorithm for the uncapacitated facility problem, then by setting our appropriate $F$ values and $D$, we can get the same approximation algorithm for unweighted set cover. But if this is a $c ln(n)$ algorithm
+    
+    \part We can do this two ways - one with formulating the problem as a linear program and solving it with a randomized rounding solution (since we have an IP problem but solve the polynomial time LP) which will be $O(ln (n))$ - approximation algorithm with a high probability of being a set cover. However, I will opt for the deterministic solution, which here is greedy.\\
+    
+    \textbf{Lemma}: The $n$-th harmonic sum $H_n$ (as described in the text) grows in $O(ln(n))$.\\
+    
+    Proof: Define $f(x) = \frac{1}{x}$. Now, we note that the lower Riemann sum with mesh $\Delta x = 1$ from $x \in [1, \infty]$ is exactly equal to the harmonic sum starting from 2, $H_x - 1$. Since this Riemann sum only makes sense on integers, we restrict this to $H_n - 1$. So we have that $H_n - 1 < \int\limits_{1}^{n}{\frac{1}{x}dx} = ln(n)$.\\
+    
+    Next, we note that taking the upper Riemann sum gives us $H_n > ln(n+1)$ by the same integral formulation. Therefore, $H_n$ is firmly asymptotically bounded in $O(ln(n))$. (I realized too late this was already proven in the book). $\square$\\
+    
+    Algorithm: Use the greedy algorithm as proposed in Algorithm 1.2, but on the uncapacitated facility location problem formulated as set cover. However, note that we cannot have our $S$ collection of sets be the naive $2^D$ as each facility could potentially house any subset of the clients $D$. This would make the algorithm exponential in the size of the inputs ($|D|, |F|$). (The greedy algorithm runs in worst case $O(nm)$ so we need to make the algorithm polynomial in both $|F|$ and $|D|$ as a result).\\
+    
+    Note that the heuristic that we are minimizing is the cost efficiency; namely cost per new element covered. Since this cost is equal to $f_i + \sum\limits_{j \ in D}{c_{ij}}$ it makes sense to consider sets that have a lower cost for the same number of elements covered. Therefore, we will only consider sets $S$ in nondecreasing order of cost. That is, just like in part a, each set $S$ consists of a pair $i \in F$ with $D_{ik}$ where $i$ represents the facility and $k$ represents the first $k$ members of $D$, sorted in nondecreasing order (among the uncovered members of $D$, staying true to our greedy algorithm) of $c_{ij}$.\\
+    
+    We would never consider in our greedy algorithm any set not in this format, because they would have the same amount of uncovered elements as some other member in $D_{ik}$ but would not have a lesser cost; the heuristic we are minimizing is $\frac{f_i + \sum\limits_{j \ in D}{c_{ij}}}{|\hat_{S}|}$ where each $\hat{S}$
+    is a member of the pairs we just described (but only counting the sizes of those we have not yet covered, just as we did in the original formulation for set cover). Note that even if nothing gets covered, there are now a total of $|D|$ sets only for every facility in $|F|$ so now our runtime is polynomial wrt those inputs.\\
+    
+    So, use Algorithm 1.2 but with the different heuristic to minimize, as described above. This will give a $H_n$ approximation with the primal and an even better $H_g$ approximation with the dual.
+    
+    
+    \end{parts}
+
+
+
+    \question \textbf{1.3}
+    
+    \begin{parts}
+    
+    \part The strongly connected part can be shown nicely. Assume we are adding $n$ cycles total. Then, in the first cycle we can reach every point backwards and forwards just by traversing the cycle. Inductively, we proceed. To get to the next points we traverse to the fixed vertex we chose, and then go to the next cycle and go to any other vertex. From any vertex on the next ($k+1$ cycle), we go to the same fixed vertex between cycles $k$ and $k-1$. This allows us to get from any point $i$ to any other point $j$, proceeding by induction.\\
+    
+    Also, note that with the same arguments of induction we can show that each indegree is equal to the outdegree. With just one cycle, everything can only be traversed through once (if simple cycle definition) and if we assume it is traversed in more than out, then we terminate on the wrong node. It does not return to the start node. Every added cycle to any point also gives you one indegree and one outdegree.\\
+    
+    Therefore, the outputted vertex and edge combinations form a Eulerian strongly connected subgraph.
+    
+    
+    \part As in the greedy formulation, we choose the minimum average (i.e. capture the most vertices with the least average cost). We can think of getting a minimum tour (lowest weight cycle without repeated edges) as "covering" all vertices in $V$. Therefore, when we get a minimum mean-cost cycle in $G = K_{|V|}$, we use the same logic as in our greedy set cover algorithm (Algorithm 1.2). The minimum mean-cost must by definition have an average weight per edge lower than the cycle that covers all of $V$ with lowest cost (else, we can just choose the minimum cost tour and solve the problem!). Let OPT be the total weight of such a cycle. We have that if cycle $i$ has $n_i$ elements, and we let $|V| = n$, and letting $s(c_i)$ be the sum of the weights on cycle $i$ added, then\\
+    
+    $$\frac{s(c_i)}{n_i} \leq \frac{OPT}{m_i}$$
+    
+    from our previous discussion ($m_i$ is the vertices left in the graph on the $i$th iterations). Note that however, our argument must be different from that described in the greedy set cover, because we do not "cover" every vertex in the same way as choosing a subset. We still need to strongly connect the resulting Eulerian subgraph so we have to keep one remaining. Therefore, the worst case is when we have such an average weight, and only remove one vertex but pay for two edges in that cycle. Therefore, $\sum\limits_{i}{c_i}$ (which is the sum of all cycles added and therefore the total weight of the Eulerian subgraph) can at worst case have $n$ iterations, each of $\frac{2OPT}{m_i}$ weight, where $m_1 = n$ and $m_n = 1$. So therefore we have:
+    
+    $$\sum\limits_{i}{c_i} \leq \sum\limits_{i=1}^{n}{\frac{2OPT}{n+1-i}} = 2H_nOPT$$
+    
+    as desired.
+    
+    
+    \end{parts}
+    
+    
+
+
+
+    \question \textbf{W \& S 2.1} 
+    
+    \begin{parts}
+    
+    
+    \part We propose a similar greedy algorothm to that of Algorithm 2.1 that fits the primal constraints of the problem. Instead of picking the maximum distance customer $j$ to $S_i$ (our set of suppliers so far) after iteration $i$), we choose the supplier that minimizes the distance to the farthest customer $j$ to $S$. That is, we pick the argument of $\min\limits_{f \in F}{d(j, f)}$ (where $j$ is the argument for $\max\limits_{c \in D}{d(c, S)}$. We do this for $k$ iterations to get our $k$ suppliers. In the case that $|D| < k$, we end the iterations when we have $|D|$ suppliers, as the rest will go unused (they can be arbitrarily chosen).\\
+    
+    Proving that it is a 3-approximation algorithm relies on a similar notion of cluster. We define a cluster as all customers that are closest to some chosen supplier (compared to any other cluster) like in the k center problem. For example, all points in $V_i$ are customers that have $d(c, s_i)$ as minimum (over all $i$). We also include other suppliers that are closer to all these customers than any other cluster, for simplicity later on. There are two cases to consider just like in the book:
+    
+    \begin{itemize}
+        \item Case 1: Picking the next $s_i$ is in another cluster of the OPTIMAL solution that previous $s_j$ $j <i$ have not yet chosen. All customers will be within the $r^*$ of the optimal $s_i^*$, and thus by the triangle inequality all customers will be within $2r^*$ of each other. Furthermore, note that any supplier in the cluster that we choose must be within $r^* = OPT$ of any other customer by way of construction of the algorithm (we choose the supplier that is closest to the farthest member of all customers, and assuming it is in this cluster [case 1], closest to all points in this cluster. We would have chosen $s_i^*$ otherwise).  Let us call these customers $c_1, c_2$ and the supplier we choose $s_i$. WLOG let $c_2$ be the farther one. Then:
+        
+        $$d(s_i, c_2) \leq d(s_i, c_1) + d(c_1, c_2) \leq 3r^* = 3OPT$$
+        
+        This concludes the proof for Case 1.
+        
+        \item Case 2: The next $s_i$ will be in a cluster of the optimal solution already occupied. We then, by construction of the algorithm, already know that the farthest point in the whole $D$ set is still within this cluster. The new customer cannot be farther than $OPT$ of the optimal and $3OPT$ of any solution we already have chosen (as we assumed it was already occupied, and that was a case 1 proof). Inductively, we can only get closer since we chose the new $s_i$ to be as close as possible, so its distance is less than $3OPT$. We thus prove this case trivially as in the book. $\square$.
+    \end{itemize}
+    
+    Mathematically equivalently, we could also have had a 3-approximation algorithm with doing $k$-centers on the customers, and then assigning each cluster center to the closest supplier in $F$.
+    
+    \part From this resource, http://personal.vu.nl/r.a.sitters/AdvancedAlgorithms/AdvAlgExCh2.pdf, I found a way to extend the dominating set argument to the $k$-suppliers problem. However, there are many triangle inequality cases to deal with since the self class distance (which is not important for our proof; ie customer to customer and supplier to supplier) must be considered in our triangle inequality formulation. With credit to my team, we use a formulation of the vertex cover. Since in this problem, vertices "cover" the adjacent edges, we also treat each vertex as a supplier that takes care of all the customers in its cluster as defined in part a. We also treat then, the edges as the customers.\\
+    
+    Given an instance $G = (V, E)$ of the vertex cover problem, we can formulate an equivalent instance of the $k$-suppliers problem (a reduction). Create a supplier $f_i$ for every vertex $v_i$. Similarly, create a customer $c_i$ for every edge in $G$. If $e_i$ is incident on $v_j$, then we set $d(c_i, f_j) = 1$. Else it is an edge that is not incident. This means that in the best case, it is part of $N^2$ which is a squared neighbor. We use the triangle inequality, assuming there is a vertex $v_k$ and edge $e_k$ in between:\\
+    
+    $$d(c_i, f_j) \leq d(c_i, f_k) + d(f_k, c_k) + d(c_e, c_k) \leq 3$$
+    
+    Thus, to stretch out our triangle inequality to the worst case distance, we set the distance between nonincident vertex/edge pairs (and thus, their isomorphic supplier/customer equivalents) to 3. That is, if $v_j$ and $e_i$ are not incident $d(f_j, c_i) = 3$. If the metric must be defined for all pairs in $D+F$, then simply define the same class distances to be 2 as in the website, or whatever else works to make the triangle inequality work with the rest of it.\\
+    
+    If there is a vertex cover of size $k$, that means there exists a solution where the optimum is $1$, just like in theorem 2.4. If we had an approximation algorithm with $\alpha < 3$, then it would follow that we would return an optimal solution of 1 since the only other possible radius is 3, which would violate our assumption. But this would then tell us that there is indeed a vertex cover of size $k$ for us, so we have solved vertex cover. This means that P=NP. Else, we can just assume that our contradiction is actually true and that the lowest possible $\alpha$ is actually 3.
+    
+    
+    
+    \end{parts}
+    
+
+
+    \question \textbf{2.11}
+    
+    \begin{parts}
+    
+    \part Utilize the result from Exercise 2.10. We propose the greedy algorithm applicable to this situation, drawing from the algorithm in 2.5. That the function $f(S)$ representing the number of covered $S_i$ is monotone is no doubt: when we increase the size of $S$, we can never cover less subsets $S_i$. Next, we prove that it is submodular, that is:\\
+    
+    $$f(S) + f(T) \geq f(S \cup T) + f(S \cap T)$$
+    
+    when $S$ and $T$ are both subsets of $E$. Proof: we call the sets that the vertices in $S$ cover $S_s$ and the sets that the vertices in $T$ cover $S_t$. Therefore, on our left side we have $|S_s| + |S_t|$ (taking the weights into account, so we sum all weights to count our cardinality here - basically weighted cardinality). On our right hand side, we have that $S_{s \cup t} = S_s \cup S_t$ since the sets that they cover as a whole is the same as the union of the sets they cover. However, we have that $S_{s \cap t} \subset S_s \cap S_t$ since the sets that they both cover could be covered by different nodes. Therefore, every node that is in both $S$ and $T$ does cover a set that both $S$ and $T$ do, but it is entirely for a set that both $S$ and $T$ cover to not be covered by anything in the intersection (as different nodes cover them). Since it is monotone, we have that $|S_{s \cup t}| \leq |S_s \cup S_t|$ where again the cardinality means the sum of all the weights. This inequality carries over, and by the inclusion exclusion principle we have that $S + T = (S \cup T) + (S \ cap T)$ and therefore if $f(S \cap T)$ is less than $|S_s \cup S_t|$ we arrive at the inequality. $\square$\\
+    
+    
+    We have a monotone increasing submodular function so we use the same applied algorithm. At every iteration, we add the node $i$ that would maximize $f(S \cup \{i\})$ (provide the greatest added weights of all NEW subsets covered). As shown in exercise 2.10 and generalized, this is an $(1 - \frac{1}{e})$ approximation algorithm.
+    
+    
+    
+    
+    \part Theorem 1.13 states that for some $c < 1$ if we have a $c ln(n)$ approximation algorithm for (unweighted) set cover then every NP-complete problem can be solved in $O(n^{O(\log\log(n))})$ time. If we had a (for positive $\epsilon$) $(1 - \frac{1}{e} + \epsilon)$ approximation 
+    
+    
+    \end{parts}
+    
+    \question \textbf{Number 5}
+    
+    \begin{parts}
+    
+    \part \textbf{Forward direction}. When we assume mutual independence, we can show the right side very easily for any subset that does not contain $\bar{E_k}$ (just use the reflexive property of equivalence). However, let us take any subset $I$ as defined in the problem, an that which includes $\{k\}$. Take the intersection of all $E_i$ where $i \in I-\{k\}$. This is equal to the disjoint union of the intersection of all $E_i$ and all $\bigcap\limits_{i \in I-\{k\}}{E_i}\cap \bar{E_k} $. This is disjoint because no outcome can both have $E_k$ as true and not. They add up to the union because each outcome that falls into the intersection of everything without $k$ has either even $E_k$ happening or not. As such, it is expected that their probabilities sum up to the probability of $\bigcap\limits_{i \in I-\{k\}}{E_i}$. We seek to verify this.\\
+    
+    $$P(\bigcap_{i \in I-\{k\}}{E_i}) = P(\bigcap_{i \in I}{E_i}) + P(\bigcap_{i \in I-\{k\}}{E_i}\cap \bar{E_k})$$ would thus imply that
+    
+    $$\prod\limits_{i \in I - {k}}{P(E_i)} = \prod\limits_{i \in I}{P(E_i)} + (\prod\limits_{i \in I - {k}}{P(E_i)}) \cdot (1 - P(E_k)$$ by the application of mutual independence and then factoring out the common $\prod\limits_{i \in I - {k}}{P(E_i)}$ term. Thus, comparing both equations we obtain that:
+    
+    $$P(\bigcap_{i \in I-\{k\}}{E_i}\cap \bar{E_k}) = (\prod\limits_{i \in I - {k}}{P(E_i)}) \cdot (1 - P(E_k)$$
+    
+    This proves the forward direction.
+    
+    \textbf{Backwards direction} Use the same technique, but this time using the fact that $\bar{\bar{E_k}} = E_k$. Therefore if the RHS is mutuall independent, so will the left hand side using the same factoring tricks.
+    
+    
+    
+    \part Let us proceed by induction on the size of $I$. In part a, we proved the size 1 case which we will use as the base case. Now, since both operations on both sides of the independence statement (namely the operation on sets of intersection, and that of multiplication of real numbers), are commutative and associative, I employ the axiom of choice to have all the members not included in $I$ to have higher numbers. This allows a more linear induction.\\
+    
+    Out inductive hypothesis is as follows. For a size $n$ exclusionary set (i.e. $|I| = k-n$, the mutual independence holds. We wish to show that it will hold if we exclude one more event $E_j$ where $j$ was originally included in $I$. Using our inductive hypothesis, we have that:
+    
+    $$P(\bigcap\limits_{i \in I - \{j\}}{E_i}) = \prod\limits_{i \in I - \{j\}}{P(E_i)} = \prod\limits_{i \in I }{P(E_i)} + (\prod\limits_{i \in I - \{j\}}{P(E_i)}) \cdot (1 - P(E_j))$$ after distribution. The rest of the stuff not already included in $I$ was not included in this argument, since our inductive hypothesis guarantees that it hold true anyways (essentially the stuff that was already not in $I$ will still make valid subsets). During proofs of induction, we must focus on the STEP, and not the full algebra. Please let me know if your rubric does not allow this, as I was trying to skip some tedious LaTexing.\\
+    
+    The inductive step basically allows us to break up the disjoint union as we did in part a, and then claim that the part where we intersect with the $\bar{E_j}$ gives us a factor of $(1-P(E_j))$ as desired. This thus completes the inductive step, where we increase the size of the exclusionary set from $n$ to $n+1$.
+    
+    
+    
+    \end{parts}
+    
+
+
+
+
+
+
+
+\end{questions}
+
+\end{document}
